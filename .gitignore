@@ -1,3 +1,6 @@
+tweets/
+romeo_and_juliet.txt
+
 *.py[cod]
 
 # C extensions

@@ -47,9 +47,7 @@ class SentenceGenerator:
         for line in self.text:
             for word in line.split(" "):
                 self.dictionary.add(word)
-
-        #print self.dictionary
-
+        print "found " + str(len(self.dictionary)) + " unique words"
         for (word, index) in zip(self.dictionary, xrange(len(self.dictionary))):
             self.index[word] = index
             self.rev_index.append(word)
@@ -57,9 +55,6 @@ class SentenceGenerator:
         for line in self.text:
             for word in line.split(" "):
                 num_text.append(self.index[word])
-       
-        #print num_text
-
         # row is current word
         # column is following word
         # value @ (row,col) is the number of times row was followed by col
@@ -71,9 +66,8 @@ class SentenceGenerator:
             self.prob_table[token][next_token] += 1
         normalize(self.prob_table)
 
-        #print self.prob_table
 
-    def generate_sentence(self, seed, length):
+    def generate_sentence_seed(self, seed, length):
         if seed not in self.dictionary:
             print "I couldn't do that for you Hal"
         else:
@@ -84,10 +78,11 @@ class SentenceGenerator:
                 toPrint += seed + " "
                 length -= 1
             print toPrint
-
+    def generate_sentence(self, length):
+        self.generate_sentence_seed(random.sample(self.dictionary,1)[0], length)
         
 
 if __name__ == "__main__":
     x = SentenceGenerator("text.txt") 
-    x.generate_sentence("this", 5)
+    x.generate_sentence_seed("this", 5)
 

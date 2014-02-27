@@ -88,11 +88,11 @@ class SentenceGenerator:
                 seed = self.rev_index[word_idx]
                 toPrint += seed + " "
                 length -= 1
-            print toPrint
+            return toPrint
     
     
     def generate_sentence(self, length):
-        self.generate_sentence_seed(self.generate_seed(), length)
+        return self.generate_sentence_seed(self.generate_seed(), length)
         
 
 if __name__ == "__main__":

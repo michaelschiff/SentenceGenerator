@@ -1,25 +1,29 @@
 import random
 from itertools import islice
+from collections import defaultdict
 
 def normalize(mat):
-    for row in mat:
-        row_sum = sum(row)
-        if row_sum is 0: continue
-        for idx in xrange(len(row)):
-            row[idx] = (row[idx]/float(row_sum))
-    return mat
+    for word in mat:
+        dict_of_nextwords = mat[word]
+        word_occurances = sum(dict_of_nextwords.values())
+        for next_word in dict_of_nextwords:
+            dict_of_nextwords[next_word] = dict_of_nextwords[next_word] / float(word_occurances)
+        
 
+# The 'return -1' at the end is there because:
+# In the special case that the text ends with a word
+# that never showed up earlier in the text, we may be asked
+# to sample from the words that follow it, of which there are none.
+# returning -1 indicates to the caller that this has happened.
 def sample(mat, m):
-    if m >= len(mat) : raise IndexError("row index out of bounds")
-    row = mat[m]
-    if sum(row) is 0: return 0
+    next_word_dict = mat[m]
     pick = random.random()
-    idx, total = 0, row[0]
-    while pick > total:
-        idx += 1
-        total += row[idx]
-    return idx
-
+    total = 0
+    for next_word in next_word_dict:
+        total += next_word_dict[next_word]
+        if total >= pick:
+            return next_word
+    return -1
 
 
 class SentenceGenerator:
@@ -30,7 +34,7 @@ class SentenceGenerator:
         self.dictionary = set()
         self.index = {} #word => num
         self.rev_index = [] #num => word
-        self.build_index()
+        self.probabilities()
         
     def window(self, seq, n=2):
         "Returns a sliding window (of width n) over data from the iterable"
@@ -43,11 +47,12 @@ class SentenceGenerator:
             result = result[1:] + (elem,)
             yield result
         
-    def build_index(self):
+    def probabilities(self):
         for line in self.text:
             for word in line.split(" "):
                 self.dictionary.add(word)
         print "found " + str(len(self.dictionary)) + " unique words"
+        
         for (word, index) in zip(self.dictionary, xrange(len(self.dictionary))):
             self.index[word] = index
             self.rev_index.append(word)
@@ -55,31 +60,39 @@ class SentenceGenerator:
         for line in self.text:
             for word in line.split(" "):
                 num_text.append(self.index[word])
-        # row is current word
-        # column is following word
-        # value @ (row,col) is the number of times row was followed by col
-        size = len(self.dictionary)
-        self.prob_table = []
-        for i in range(size):
-            self.prob_table.append([0]*size)
-        for (token, next_token) in self.window(num_text):
+        
+        # a dictionary, whose default value is a dictionary, whose default value is 0.
+        self.prob_table = defaultdict(lambda : defaultdict(lambda : 0))
+        for (token, next_token) in self.window(num_text): 
             self.prob_table[token][next_token] += 1
         normalize(self.prob_table)
 
 
+    def generate_seed(self):
+        return random.sample(self.dictionary, 1)[0]
+    
+    
+    # because of the special case described above: we generate samples of the next word,
+    # until we get a non-negative index, generating a new seed each time.  We use a new seed
+    # because the seed that returned a sample of -1 will always return a sample of -1.
     def generate_sentence_seed(self, seed, length):
         if seed not in self.dictionary:
             print "I couldn't do that for you Hal"
         else:
             toPrint = seed+" "
             while length > 0:
-                word_idx = sample(self.prob_table, self.index[seed])
+                word_idx = -1
+                while word_idx < 0: 
+                    word_idx = sample(self.prob_table, self.index[seed])
+                    seed = self.generate_seed()
                 seed = self.rev_index[word_idx]
                 toPrint += seed + " "
                 length -= 1
             print toPrint
+    
+    
     def generate_sentence(self, length):
-        self.generate_sentence_seed(random.sample(self.dictionary,1)[0], length)
+        self.generate_sentence_seed(self.generate_seed(), length)
         
 
 if __name__ == "__main__":

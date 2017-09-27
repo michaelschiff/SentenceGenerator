@@ -72,30 +72,46 @@ class SentenceGenerator:
         return random.sample(self.dictionary, 1)[0]
     
     
+    def next_word(self, seed):
+        word_idx = sample(self.prob_table, self.index[seed])
+        return self.rev_index[word_idx]
+   
+    def generate_sentence(self, length):
+        current_word = self.generate_seed()
+        res = current_word + " "
+        # length-1 since the seed is the first word
+        for i in xrange(0, length-1):
+            current_word_idx = sample(self.prob_table, self.index[current_word])
+            current_word = self.rev_index[current_word_idx]
+            res += current_word + " "
+        return res
+            
+
+
     # because of the special case described above: we generate samples of the next word,
     # until we get a non-negative index, generating a new seed each time.  We use a new seed
     # because the seed that returned a sample of -1 will always return a sample of -1.
-    def generate_sentence_seed(self, seed, length):
-        if seed not in self.dictionary:
-            print "I couldn't do that for you Hal"
-        else:
-            toPrint = seed+" "
-            while length > 0:
-                word_idx = -1
-                while word_idx < 0: 
-                    word_idx = sample(self.prob_table, self.index[seed])
-                    seed = self.generate_seed()
-                seed = self.rev_index[word_idx]
-                toPrint += seed + " "
-                length -= 1
-            return toPrint
+    #def generate_sentence_seed(self, seed, length):
+    #    if seed not in self.dictionary:
+    #        print "I couldn't do that for you Hal"
+    #    else:
+    #        toPrint = seed+" "
+    #        while length > 0:
+    #            word_idx = -1
+    #            while word_idx < 0: 
+    #                word_idx = sample(self.prob_table, self.index[seed])
+    #                seed = self.generate_seed()
+    #            seed = self.rev_index[word_idx]
+    #            toPrint += seed + " "
+    #            length -= 1
+    #        return toPrint
     
     
-    def generate_sentence(self, length):
-        return self.generate_sentence_seed(self.generate_seed(), length)
+    #def generate_sentence(self, length):
+    #    return self.generate_sentence_seed(self.generate_seed(), length)
         
 
 if __name__ == "__main__":
-    x = SentenceGenerator("text.txt") 
-    x.generate_sentence_seed("this", 5)
+    x = SentenceGenerator("romeo_and_juliet.txt") 
+    print x.generate_sentence(20)
 

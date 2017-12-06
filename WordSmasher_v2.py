@@ -1,3 +1,4 @@
+import sys
 import random
 from itertools import islice
 from collections import defaultdict
@@ -105,5 +106,10 @@ class SentenceGenerator:
         return " ".join(res)
 
 if __name__ == "__main__":
-    x = SentenceGenerator("romeo_and_juliet.txt", 3) 
-    print x.generate_sentence(2, 250)
+    # python WordSmasher_v2.py "sample.txt" 2 100
+    # uses sample.txt, lookback size 2, 100 word sentence
+    text = sys.argv[1]
+    arity = int(sys.argv[2])
+    length = int(sys.argv[3])
+    x = SentenceGenerator(text, arity) 
+    print x.generate_sentence(arity, length)

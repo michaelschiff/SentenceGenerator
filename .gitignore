@@ -1,4 +1,5 @@
 tweets/
+tweets.txt
 romeo_and_juliet.txt
 
 *.py[cod]

@@ -111,5 +111,8 @@ if __name__ == "__main__":
     text = sys.argv[1]
     arity = int(sys.argv[2])
     length = int(sys.argv[3])
-    x = SentenceGenerator(text, arity) 
-    print x.generate_sentence(arity, length)
+    num_sentences = int(sys.argv[4])
+    x = SentenceGenerator(text, arity)
+    for i in range (num_sentences):
+        print x.generate_sentence(arity, length)
+        print "########################################################" 

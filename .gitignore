@@ -21,6 +21,8 @@ develop-eggs
 lib
 lib64
 
+tweets.txt
+
 # Installer logs
 pip-log.txt
 
